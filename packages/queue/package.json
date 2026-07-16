@@ -1,0 +1,17 @@
+{
+  "name": "@html2pdf-pro/queue",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "queue:check": "node --import tsx ./src/check.ts"
+  },
+  "dependencies": {
+    "@html2pdf-pro/config": "workspace:*",
+    "@html2pdf-pro/conversions": "workspace:*",
+    "bullmq": "^5.34.1",
+    "tsx": "^4.19.3"
+  }
+}

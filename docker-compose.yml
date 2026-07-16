@@ -1,0 +1,156 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: html2pdf-pro-postgres
+    environment:
+      POSTGRES_DB: html2pdf_pro
+      POSTGRES_USER: html2pdf
+      POSTGRES_PASSWORD: html2pdf
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U html2pdf -d html2pdf_pro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: html2pdf-pro-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    container_name: html2pdf-pro-web
+    command: ["apps/web/node_modules/.bin/next", "start", "apps/web", "-H", "0.0.0.0", "-p", "3000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      DATABASE_URL: postgresql://html2pdf:html2pdf@postgres:5432/html2pdf_pro?schema=public
+      REDIS_URL: redis://redis:6379
+      APP_SECRET: dockerlocalappsecret0000000000000001
+      INTERNAL_API_SECRET: dockerlocalinternalsecret0000000001
+      STORAGE_DRIVER: local
+      LOCAL_STORAGE_PATH: ./storage
+      HTML_SOURCE_STORAGE_PATH: ./storage/sources
+      PDF_OUTPUT_STORAGE_PATH: ./storage/outputs
+      CONVERSION_QUEUE_NAME: pdf-conversions
+      CONVERSION_JOB_ATTEMPTS: 3
+      CONVERSION_RETENTION_HOURS: 24
+      HTML_SOURCE_TTL_SECONDS: 86400
+      PDF_OUTPUT_TTL_SECONDS: 86400
+      CLEANUP_BATCH_SIZE: 100
+      CLEANUP_INTERVAL_SECONDS: 3600
+      CLEANUP_DRY_RUN: "true"
+      HTML_MAX_BYTES: 2000000
+      PDF_MAX_BYTES: 10000000
+      NAVIGATION_TIMEOUT_MS: 30000
+      PDF_GENERATION_TIMEOUT_MS: 60000
+      MAX_REDIRECTS: 5
+      MAX_NETWORK_REQUESTS: 100
+      MAX_TOTAL_NETWORK_BYTES: 20000000
+      MAX_RESOURCE_BYTES: 5000000
+      MAX_DOM_CONTENT_BYTES: 5000000
+      WORKER_CONCURRENCY: 2
+      WORKER_JOB_TIMEOUT_MS: 60000
+      PLAYWRIGHT_JAVASCRIPT_ENABLED: "true"
+    init: true
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "fetch(''http://localhost:3000/api/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"'
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - source_storage:/app/storage/sources
+      - output_storage:/app/storage/outputs
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    container_name: html2pdf-pro-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      DATABASE_URL: postgresql://html2pdf:html2pdf@postgres:5432/html2pdf_pro?schema=public
+      REDIS_URL: redis://redis:6379
+      APP_SECRET: dockerlocalappsecret0000000000000001
+      INTERNAL_API_SECRET: dockerlocalinternalsecret0000000001
+      STORAGE_DRIVER: local
+      LOCAL_STORAGE_PATH: ./storage
+      HTML_SOURCE_STORAGE_PATH: ./storage/sources
+      PDF_OUTPUT_STORAGE_PATH: ./storage/outputs
+      CONVERSION_QUEUE_NAME: pdf-conversions
+      CONVERSION_JOB_ATTEMPTS: 3
+      CONVERSION_RETENTION_HOURS: 24
+      HTML_SOURCE_TTL_SECONDS: 86400
+      PDF_OUTPUT_TTL_SECONDS: 86400
+      CLEANUP_BATCH_SIZE: 100
+      CLEANUP_INTERVAL_SECONDS: 3600
+      CLEANUP_DRY_RUN: "true"
+      HTML_MAX_BYTES: 2000000
+      PDF_MAX_BYTES: 10000000
+      NAVIGATION_TIMEOUT_MS: 30000
+      PDF_GENERATION_TIMEOUT_MS: 60000
+      MAX_REDIRECTS: 5
+      MAX_NETWORK_REQUESTS: 100
+      MAX_TOTAL_NETWORK_BYTES: 20000000
+      MAX_RESOURCE_BYTES: 5000000
+      MAX_DOM_CONTENT_BYTES: 5000000
+      WORKER_CONCURRENCY: 2
+      WORKER_JOB_TIMEOUT_MS: 60000
+      PLAYWRIGHT_JAVASCRIPT_ENABLED: "true"
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    init: true
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 256
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "apps/worker/node_modules/.bin/tsx", "apps/worker/src/health-check.ts"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - source_storage:/app/storage/sources
+      - output_storage:/app/storage/outputs
+
+volumes:
+  postgres_data:
+  redis_data:
+  source_storage:
+  output_storage:

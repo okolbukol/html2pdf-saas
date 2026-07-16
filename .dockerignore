@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.cache
+storage
+dist
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.log
+.git

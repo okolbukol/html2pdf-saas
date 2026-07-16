@@ -1,0 +1,24 @@
+{
+  "name": "@html2pdf-pro/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cleanup:dry-run": "tsx ./src/cleanup-cli.ts",
+    "cleanup:run": "tsx ./src/cleanup-cli.ts --apply",
+    "dev": "tsx watch ./src/index.ts",
+    "health:check": "tsx ./src/health-check.ts",
+    "reconcile": "tsx ./src/reconcile-cli.ts",
+    "start": "tsx ./src/index.ts"
+  },
+  "dependencies": {
+    "@html2pdf-pro/config": "workspace:*",
+    "@html2pdf-pro/conversions": "workspace:*",
+    "@html2pdf-pro/database": "workspace:*",
+    "@html2pdf-pro/pdf-engine": "workspace:*",
+    "@html2pdf-pro/queue": "workspace:*",
+    "@html2pdf-pro/storage": "workspace:*",
+    "bullmq": "^5.34.1",
+    "tsx": "^4.19.3"
+  }
+}

@@ -1,0 +1,7 @@
+AGENTS.md
+docs/PRODUCT_SPEC.md
+node_modules/
+.next/
+coverage/
+dist/
+packages/database/generated/

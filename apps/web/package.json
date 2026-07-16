@@ -1,0 +1,21 @@
+{
+  "name": "@html2pdf-pro/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@html2pdf-pro/config": "workspace:*",
+    "@html2pdf-pro/conversions": "workspace:*",
+    "@html2pdf-pro/database": "workspace:*",
+    "@html2pdf-pro/queue": "workspace:*",
+    "@html2pdf-pro/storage": "workspace:*",
+    "next": "^15.2.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  }
+}
