@@ -1,0 +1,11 @@
+{
+  "name": "@html2pdf-pro/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@html2pdf-pro/conversions": "workspace:*"
+  }
+}

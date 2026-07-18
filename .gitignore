@@ -23,5 +23,5 @@ yarn-debug.log*
 # local files
 .DS_Store
 Thumbs.db
-storage/
+/storage/
 .cache/
