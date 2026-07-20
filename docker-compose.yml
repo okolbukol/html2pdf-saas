@@ -45,10 +45,13 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-replace-with-google-client-id}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-replace-with-google-client-secret}
       DATABASE_URL: postgresql://html2pdf:html2pdf@postgres:5432/html2pdf_pro?schema=public
       REDIS_URL: redis://redis:6379
-      APP_SECRET: dockerlocalappsecret0000000000000001
+      APP_SECRET: "${APP_SECRET:?APP_SECRET must be supplied externally}"
       INTERNAL_API_SECRET: dockerlocalinternalsecret0000000001
       STORAGE_DRIVER: local
       LOCAL_STORAGE_PATH: ./storage
@@ -107,7 +110,7 @@ services:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       DATABASE_URL: postgresql://html2pdf:html2pdf@postgres:5432/html2pdf_pro?schema=public
       REDIS_URL: redis://redis:6379
-      APP_SECRET: dockerlocalappsecret0000000000000001
+      APP_SECRET: "${APP_SECRET:?APP_SECRET must be supplied externally}"
       INTERNAL_API_SECRET: dockerlocalinternalsecret0000000001
       STORAGE_DRIVER: local
       LOCAL_STORAGE_PATH: ./storage

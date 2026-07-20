@@ -63,24 +63,25 @@ enum PaymentStatus {
 }
 
 model User {
-  id             String               @id @default(cuid())
-  email          String               @unique
-  name           String?
-  passwordHash   String?
-  emailVerified  DateTime?
-  role           UserRole             @default(USER)
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  deletedAt      DateTime?
-  accounts       Account[]
-  sessions       Session[]
-  memberships    OrganizationMember[]
-  conversions    Conversion[]
-  templates      Template[]
-  apiKeys        ApiKey[]
-  usageRecords   UsageRecord[]
-  auditLogs      AuditLog[]
-  adminActions   AdminAction[]        @relation("AdminActor")
+  id               String        @id @default(cuid())
+  email            String        @unique
+  name             String?
+  passwordHash     String?
+  emailVerified    DateTime?
+  authProvisioning Boolean       @default(false)
+  role             UserRole      @default(USER)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+  accounts         Account[]
+  sessions         Session[]
+  memberships      OrganizationMember[]
+  conversions      Conversion[]
+  templates        Template[]
+  apiKeys          ApiKey[]
+  usageRecords     UsageRecord[]
+  auditLogs        AuditLog[]
+  adminActions     AdminAction[] @relation("AdminActor")
 }
 
 model Account {
