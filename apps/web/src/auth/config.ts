@@ -1,4 +1,5 @@
 import type { Adapter } from "next-auth/adapters";
+import { strongProductionSecretSchema } from "@html2pdf-pro/config";
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
@@ -65,6 +66,17 @@ const authEnvironmentSchema = z
         code: "custom",
         message: "AUTH_URL and NEXT_PUBLIC_APP_URL must identify the same origin.",
         path: ["AUTH_URL"]
+      });
+    }
+
+    if (
+      environment.NODE_ENV === "production" &&
+      !strongProductionSecretSchema.safeParse(environment.APP_SECRET).success
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "APP_SECRET must be a strong non-default secret in production.",
+        path: ["APP_SECRET"]
       });
     }
   });

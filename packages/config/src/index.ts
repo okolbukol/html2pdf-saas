@@ -1,5 +1,26 @@
 import { z } from "zod";
 
+export const REPOSITORY_SECRET_PLACEHOLDER = "replace-with-at-least-32-characters";
+
+const documentedDefaultPattern =
+  /(changeme|replacewith|placeholder|examplesecret|defaultsecret|yoursecret)/;
+const repeatedCharacterPattern = /^(.)\1+$/;
+
+function normalizeDocumentedDefaultSeparators(secret: string): string {
+  return secret.toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+export const strongProductionSecretSchema = z
+  .string({ required_error: "Secret is required." })
+  .min(32, "Secret must contain at least 32 characters.")
+  .refine(
+    (secret) =>
+      secret !== REPOSITORY_SECRET_PLACEHOLDER &&
+      !repeatedCharacterPattern.test(secret) &&
+      !documentedDefaultPattern.test(normalizeDocumentedDefaultSeparators(secret)),
+    "Secret must be strong and must not use a documented or example default."
+  );
+
 const envSchema = z
   .object({
     APP_SECRET: z.string().min(32),
@@ -51,13 +72,7 @@ const envSchema = z
     }
 
     for (const key of ["APP_SECRET", "INTERNAL_API_SECRET"] as const) {
-      const value = env[key];
-      const weak =
-        value === "replace-with-at-least-32-characters" ||
-        /^(.)(\1){31,}$/.test(value) ||
-        value.toLowerCase().includes("replace");
-
-      if (weak) {
+      if (!strongProductionSecretSchema.safeParse(env[key]).success) {
         ctx.addIssue({
           code: "custom",
           message: `${key} must be a strong non-default secret in production.`,

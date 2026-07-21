@@ -1,4 +1,6 @@
 import type { Adapter } from "next-auth/adapters";
+import { randomBytes } from "node:crypto";
+import { REPOSITORY_SECRET_PLACEHOLDER } from "@html2pdf-pro/config";
 import { describe, expect, it } from "vitest";
 import {
   createAuthConfig,
@@ -40,6 +42,7 @@ describe("authentication configuration", () => {
   it("enforces the production cookie and HTTPS requirements", () => {
     const environment = {
       ...baseEnvironment,
+      APP_SECRET: randomBytes(32).toString("base64url"),
       AUTH_URL: "https://app.example.com",
       NEXT_PUBLIC_APP_URL: "https://app.example.com",
       NODE_ENV: "production" as const
@@ -62,6 +65,43 @@ describe("authentication configuration", () => {
         NEXT_PUBLIC_APP_URL: "http://app.example.com"
       })
     ).toThrow("AUTH_URL must use HTTPS in production");
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["empty", ""],
+    ["short", "short"],
+    ["repeated characters", "a".repeat(32)],
+    ["changeme default", "changeme-please-before-production-123"],
+    ["change_me default", "change_me_before_production_123456"],
+    ["change me default", "change me before production 123456"],
+    ["replace-with default", "replace-with-a-real-production-secret"],
+    ["replace_with default", "replace_with_a_real_production_secret"],
+    ["replace with default", "replace with a real production secret"],
+    ["tracked repository placeholder", REPOSITORY_SECRET_PLACEHOLDER],
+    ["documented example default", "default-secret-for-production-123456"]
+  ])("rejects a %s APP_SECRET in production", (_description, secret) => {
+    expect(() =>
+      parseAuthEnvironment({
+        ...baseEnvironment,
+        APP_SECRET: secret,
+        AUTH_URL: "https://app.example.com",
+        NEXT_PUBLIC_APP_URL: "https://app.example.com",
+        NODE_ENV: "production"
+      })
+    ).toThrow();
+  });
+
+  it("accepts a strong generated APP_SECRET in production", () => {
+    expect(() =>
+      parseAuthEnvironment({
+        ...baseEnvironment,
+        APP_SECRET: randomBytes(32).toString("base64url"),
+        AUTH_URL: "https://app.example.com",
+        NEXT_PUBLIC_APP_URL: "https://app.example.com",
+        NODE_ENV: "production"
+      })
+    ).not.toThrow();
   });
 
   it("rejects unverified or incomplete Google identities", async () => {

@@ -14,7 +14,7 @@
     "typecheck": "pnpm db:generate && tsc --noEmit",
     "test": "pnpm db:generate && vitest run --configLoader runner",
     "test:unit": "pnpm db:generate && vitest run --configLoader runner --exclude \"**/*.integration.test.ts\" --exclude \"**/*.pw.test.ts\"",
-    "test:integration": "pnpm db:generate && vitest run --configLoader runner --passWithNoTests \"**/*.integration.test.ts\"",
+    "test:integration": "pnpm db:generate && vitest run --configLoader runner apps/web/src/auth/adapter.integration.test.ts",
     "test:playwright": "pnpm db:generate && node ./scripts/run-playwright-tests.mjs",
     "test:runtime": "pnpm db:generate && pnpm --filter @html2pdf-pro/worker health:check",
     "test:watch": "vitest --configLoader runner",
